@@ -3,12 +3,11 @@
 #include <functional>
 
 //TODO
-//inherit velocity
-//collision
 //stretching by velocity
-//additive blending
-//instancing
+//inherit velocity
 //soft particles
+//instancing
+//collision
 
 enum animable_type
 {
@@ -96,6 +95,8 @@ public:
   int max_particles; //maximum number of particles to be present at a time
 
   bool is_child;
+
+  bool is_additive;
 
   vector<particle> particles;
 

@@ -187,8 +187,9 @@ int main( int argc, char** argv )
   ps->is_looping = true;
   ps->prewarm = false;
   ps->is_child = false;
+  ps->is_additive = false;
   ps->gravity_multiplier = 5;
-  ps->max_particles = 50000;
+  ps->max_particles = 1000;
   ps->start_pos.type = FUNCTION;
   ps->start_pos.func = []( float dt, const vec3& pos, const vec3& dir ) -> vec3 
   {
@@ -208,7 +209,7 @@ int main( int argc, char** argv )
   ps->start_opacity.type = CONSTANT;
   ps->start_opacity.value = 1; //[0..1]
   ps->emit_per_second.type = CONSTANT;
-  ps->emit_per_second.value = 10000; //pieces
+  ps->emit_per_second.value = 100; //pieces
   ps->start_life.type = CONSTANT;
   ps->start_life.value = 2; //s
 
@@ -224,6 +225,7 @@ int main( int argc, char** argv )
   ps2->is_looping = true;
   ps2->prewarm = false;
   ps2->is_child = true;
+  ps2->is_additive = true;
   ps2->gravity_multiplier = 5;
   ps2->max_particles = 50000;
 
@@ -457,7 +459,18 @@ int main( int argc, char** argv )
         glActiveTexture( GL_TEXTURE0 );
         glBindTexture( GL_TEXTURE_2D, tex );
         glEnable( GL_BLEND );
-        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        if( ptr->is_additive )
+        {
+          //additive blending
+          glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+        }
+        else
+        {
+          //normal blending
+          glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+        }
+        
         glDepthMask( false );
 
         int counter = 0;
@@ -471,6 +484,8 @@ int main( int argc, char** argv )
           vec3 lr = ps_it->pos + to_lr * ps_it->size;
           vec3 ul = ps_it->pos + to_ul * ps_it->size;
           vec3 ur = ps_it->pos + to_ur * ps_it->size;
+
+          //first, rotate the billboard to velocity direction, then stretch along the y axis
 
           glVertex3fv( &lr.x );
           glTexCoord2f( 1, 0 );
