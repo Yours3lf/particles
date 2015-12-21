@@ -98,6 +98,9 @@ public:
 
   bool is_additive;
 
+  bool is_stretched;
+  float stretch_factor;
+
   vector<particle> particles;
 
   void init( int id, particle_manager* pm )

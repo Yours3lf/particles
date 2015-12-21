@@ -188,6 +188,8 @@ int main( int argc, char** argv )
   ps->prewarm = false;
   ps->is_child = false;
   ps->is_additive = false;
+  ps->is_stretched = true;
+  ps->stretch_factor = 5;
   ps->gravity_multiplier = 5;
   ps->max_particles = 1000;
   ps->start_pos.type = FUNCTION;
@@ -226,6 +228,8 @@ int main( int argc, char** argv )
   ps2->prewarm = false;
   ps2->is_child = true;
   ps2->is_additive = true;
+  ps2->is_stretched = false;
+  ps2->stretch_factor = 1;
   ps2->gravity_multiplier = 5;
   ps2->max_particles = 50000;
 
@@ -270,6 +274,8 @@ int main( int argc, char** argv )
   float vert_sensitivity = 0.15;
 
   bool has_focus = true;
+
+  bool update_pm = true;
 
   auto event_handler = [&]( const sf::Event & ev )
   {
@@ -337,6 +343,15 @@ int main( int argc, char** argv )
       }
 
       break;
+    }
+    case sf::Event::KeyPressed:
+    {
+                                if( ev.key.code == sf::Keyboard::Space )
+                                {
+                                  update_pm = !update_pm;
+                                }
+
+                                break;
     }
     default:
       break;
@@ -410,7 +425,10 @@ int main( int argc, char** argv )
     //update at 60hz
     if( seconds > 0.01667 )
     {
-      pm.update( seconds );
+      if( update_pm )
+      {
+        pm.update( seconds );
+      }
 
       //sort each particle system back-to-front
       auto ptr = pm.get( ps_id );
@@ -445,13 +463,6 @@ int main( int argc, char** argv )
         vec3 up = cam.up_vector;
         vec3 right = cross( cam.view_dir, cam.up_vector );
 
-        vec3 to_ur = normalize( right + up );
-        //vec3 to_ur = ( right + up );
-        vec3 to_ll = -to_ur;
-        vec3 to_lr = normalize( right - up );
-        //vec3 to_lr = ( right - up );
-        vec3 to_ul = -to_lr;
-
         glUseProgram( 0 );
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
@@ -478,6 +489,25 @@ int main( int argc, char** argv )
         for( ; ps_it != ps_it_end; ++ps_it )
         {
           glColor4f( ps_it->color.x, ps_it->color.y, ps_it->color.z, ps_it->opacity );
+
+          vec3 yaxis;
+          if( ptr->is_stretched )
+          {
+            yaxis = normalize( ps_it->vel ) * 5;
+          }
+          else
+          {
+            yaxis = up;
+          }
+          vec3 zaxis = fwd;
+          vec3 xaxis = normalize( cross( zaxis, yaxis ) );
+
+          vec3 to_ur = normalize( xaxis + yaxis );
+          //vec3 to_ur = ( right + up );
+          vec3 to_ll = -to_ur;
+          vec3 to_lr = normalize( xaxis - yaxis );
+          //vec3 to_lr = ( right - up );
+          vec3 to_ul = -to_lr;
 
           glBegin( GL_QUADS );
           vec3 ll = ps_it->pos + to_ll * ps_it->size;
