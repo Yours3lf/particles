@@ -190,8 +190,9 @@ int main( int argc, char** argv )
   ps->is_additive = false;
   ps->is_stretched = true;
   ps->stretch_factor = 5;
+  ps->inherit_vel = false;
   ps->gravity_multiplier = 5;
-  ps->max_particles = 1000;
+  ps->max_particles = 50000;
   ps->start_pos.type = FUNCTION;
   ps->start_pos.func = []( float dt, const vec3& pos, const vec3& dir ) -> vec3 
   {
@@ -230,6 +231,7 @@ int main( int argc, char** argv )
   ps2->is_additive = true;
   ps2->is_stretched = false;
   ps2->stretch_factor = 1;
+  ps2->inherit_vel = true;
   ps2->gravity_multiplier = 5;
   ps2->max_particles = 50000;
 
@@ -499,6 +501,7 @@ int main( int argc, char** argv )
           {
             yaxis = up;
           }
+
           vec3 zaxis = fwd;
           vec3 xaxis = normalize( cross( zaxis, yaxis ) );
 

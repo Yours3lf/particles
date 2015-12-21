@@ -3,7 +3,6 @@
 #include <functional>
 
 //TODO
-//inherit velocity
 //soft particles
 //instancing
 //collision
@@ -100,6 +99,8 @@ public:
   bool is_stretched;
   float stretch_factor;
 
+  bool inherit_vel;
+
   vector<particle> particles;
 
   void init( int id, particle_manager* pm )
@@ -109,9 +110,9 @@ public:
     first_update = true;
   }
 
-  void emit( float dt, bool sub_birth );
+  void emit( float dt, bool sub_birth, const vec3& inherited_vel = vec3(0) );
 
-  void emit_bursts( float dt, bool force )
+  void emit_bursts( float dt, bool force, const vec3& inherited_vel = vec3( 0 ) )
   {
     for( auto& i : bursts )
     {
@@ -119,7 +120,7 @@ public:
       {
         for( int j = 0; j < i.second; ++j )
         {
-          emit( dt, false );
+          emit( dt, false, inherited_vel );
         }
       }
     }
@@ -278,7 +279,7 @@ public:
   }
 };
 
-void particle_emitter::emit( float dt, bool sub_birth )
+void particle_emitter::emit( float dt, bool sub_birth, const vec3& inherited_vel )
 {
   //emit now
   if( particles.size() < max_particles )
@@ -287,7 +288,7 @@ void particle_emitter::emit( float dt, bool sub_birth )
     {
       for( auto& i : birth_subemitter_ids )
       {
-        pm->get( i )->emit_bursts( dt, true );
+        pm->get( i )->emit_bursts( dt, true, inherited_vel );
       }
     }
 
@@ -297,7 +298,7 @@ void particle_emitter::emit( float dt, bool sub_birth )
     float t = duration - life;
     p.old_pos = start_pos.get( t, pos, dir );
     p.pos = p.old_pos;
-    p.vel = start_velocity.get( t, pos, dir );
+    p.vel = start_velocity.get( t, pos, dir ) + inherited_vel;
     p.color = start_color.get( t, pos, dir );
     p.size = start_size.get( t, pos, dir );
     p.opacity = start_opacity.get( t, pos, dir );
@@ -361,7 +362,9 @@ void particle_emitter::update_particles( float dt )
         auto ps = pm->get( i );
         ps->pos = it->pos;
         ps->dir = normalize(it->vel);
-        ps->emit_bursts( dt, true );
+        
+        if( ps->inherit_vel )
+          ps->emit_bursts( dt, true, it->vel );
       }
 
       particles.erase( it );
