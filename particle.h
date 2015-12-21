@@ -3,7 +3,6 @@
 #include <functional>
 
 //TODO
-//stretching by velocity
 //inherit velocity
 //soft particles
 //instancing
