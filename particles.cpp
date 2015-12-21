@@ -495,7 +495,7 @@ int main( int argc, char** argv )
           vec3 yaxis;
           if( ptr->is_stretched )
           {
-            yaxis = normalize( ps_it->vel ) * 5;
+            yaxis = normalize( ps_it->vel ) * ptr->stretch_factor;
           }
           else
           {
